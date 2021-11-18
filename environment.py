@@ -27,6 +27,7 @@ class Env():
         stack_array = np.expand_dims(stack_array, axis=0)
         return stack_array
 
+        # return np.array((self.stack))
         #return self.stack
 
     def step(self, action):

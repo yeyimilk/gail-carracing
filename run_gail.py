@@ -36,7 +36,6 @@ def rgb2gray(rgb, norm=True):
 
 
 def main(args):
-    #env.seed(0)
 
     env = Env()
     expert = Agent(trainedWeights)
@@ -44,9 +43,8 @@ def main(args):
 
     render = True
 
-
     logdir = os.path.join("logs", str(time.time()))
-    savedir = os.path.join("saved_model", str(time.time()))
+    savedir = os.path.join(logdir, "saved_model")
 
     print(f"Logdir: {logdir}\n savedir: {savedir}")
 
@@ -61,7 +59,7 @@ def main(args):
 
     # Getting Agent states and actions
     episode_rewards = []
-    expert_iterations = 10
+    expert_iterations = 1
 
     # Getting Expert states and actions
     for iteration in range(expert_iterations):
@@ -76,7 +74,7 @@ def main(args):
 
         while not done:
             act = expert.act(ob)
-            print("Expert action:", act)
+            # print("Expert action:", act)
 
             ep_obs.append(ob)
             expert_obs.append(ob)
@@ -88,7 +86,9 @@ def main(args):
             if render:
                 env.render()
 
-            ob, rwd, done, info = env.step(act)
+            ob, rwd, done, info = env.step(act * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+            # state_, reward, done, die = env.step(action * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+
             ep_rwds.append(rwd)
 
             t += 1
@@ -140,7 +140,7 @@ def main(args):
                 actions_array = np.vstack((actions_array, agent_act))
                 agent_act = agent_act[0]
 
-                next_obs, reward, done, info = env.step(agent_act)
+                next_obs, reward, done, info = env.step(act * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
 
                 if render:
                     env.render()
