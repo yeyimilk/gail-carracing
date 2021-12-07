@@ -59,107 +59,6 @@ class Net(nn.Module):
 
 
 
-# class Net(nn.Module):
-#     """
-#     Actor-Critic Network for PPO
-#     """
-#
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.cnn_base = nn.Sequential(  # input shape (4, 96, 96)
-#             nn.Conv2d(4, 8, kernel_size=4, stride=2),
-#             nn.ReLU(),  # activation
-#             nn.Conv2d(8, 16, kernel_size=3, stride=2),  # (8, 47, 47)
-#             nn.ReLU(),  # activation
-#             nn.Conv2d(16, 32, kernel_size=3, stride=2),  # (16, 23, 23)
-#             nn.ReLU(),  # activation
-#             nn.Conv2d(32, 64, kernel_size=3, stride=2),  # (32, 11, 11)
-#             nn.ReLU(),  # activation
-#             nn.Conv2d(64, 128, kernel_size=3, stride=1),  # (64, 5, 5)
-#             nn.ReLU(),  # activation
-#             nn.Conv2d(128, 256, kernel_size=3, stride=1),  # (128, 3, 3)
-#             nn.ReLU(),  # activation
-#         )  # output shape (256, 1, 1)
-#         self.v = nn.Sequential(nn.Linear(256, 100), nn.ReLU(), nn.Linear(100, 1))
-#         self.fc = nn.Sequential(nn.Linear(256, 100), nn.ReLU())
-#         self.alpha_head = nn.Sequential(nn.Linear(100, 3), nn.Softplus())
-#         self.beta_head = nn.Sequential(nn.Linear(100, 3), nn.Softplus())
-#         # self.apply(self._weights_init)
-#
-#     @staticmethod
-#     def _weights_init(m):
-#         if isinstance(m, nn.Conv2d):
-#             nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
-#             nn.init.constant_(m.bias, 0.1)
-#
-#     def forward(self, x):
-#         x = self.cnn_base(x)
-#         x = x.view(-1, 256)
-#         v = self.v(x)
-#         x = self.fc(x)
-#         alpha = self.alpha_head(x) + 1
-#         beta = self.beta_head(x) + 1
-#
-#         return (alpha, beta), v
-
-
-class Agent():
-    """
-    Agent for testing
-    """
-
-    def __init__(self):
-        self.net = Net().float().to(device)
-
-    def select_action(self, state):
-
-        # print(f"before Isnide select action: shape: {state.shape}")
-
-        state = torch.from_numpy(state).float().to(device).unsqueeze(0)
-
-        # print(f"Isnide select action: shape: {state.shape}")
-
-        with torch.no_grad():
-            alpha, beta = self.net(state)[0]
-        action = alpha / (alpha + beta)
-
-        action = action.squeeze().cpu().numpy()
-        return action
-
-    def load_param(self):
-        self.net.load_state_dict(torch.load('param/ppo_net_params.pkl',  map_location=torch.device('cpu')))
-
-
-
-# class Agent():
-#     """
-#     Agent for testing
-#     """
-#
-#     def __init__(self, trainedWeights):
-#         self.net = Net().float().to(device)
-#         self.trainedWeights = trainedWeights
-#
-#     def act(self, state):
-#
-#         # print(f"before Isnide select action: shape: {state.shape}")
-#
-#         state = torch.from_numpy(state).float().to(device).unsqueeze(0)
-#
-#         # print(f"Isnide select action: shape: {state.shape}")
-#
-#         with torch.no_grad():
-#             alpha, beta = self.net(state)[0]
-#         action = alpha / (alpha + beta)
-#
-#         action = action.squeeze().cpu().numpy()
-#         return action
-#
-#     def load_param(self):
-#         self.net.load_state_dict(torch.load("",  map_location=torch.device('cpu')))
-#
-
-
 class Agent():
     """
     Agent for testing
@@ -171,16 +70,7 @@ class Agent():
 
     def act(self, state):
 
-        # # print("Before State Space:", state.shape)
-        # print("State Space:", state.shape)
-        # # state = state[0]
-        # # print("State Space:", state.shape)
-        #
         state = np.transpose(state, axes=[0, 3, 1, 2])
-        # print("after State Space:", state.shape)
-
-        # state = torch.from_numpy(state).float().to(device).unsqueeze(0)
-        # print("State Space:", state.shape)
 
         state = torch.from_numpy(state).float().to(device)
 

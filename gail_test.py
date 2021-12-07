@@ -6,6 +6,7 @@ import gym
 import torch
 import torch.nn as nn
 from env2 import Env
+from torchsummary import summary
 
 parser = argparse.ArgumentParser(description='Test the PPO agent for the CarRacing-v0')
 parser.add_argument('--action-repeat', type=int, default=8, metavar='N', help='repeat action in N frames (default: 12)')
@@ -161,7 +162,7 @@ class Agent():
         return action
 
     def load_param(self):
-        self.net.load_state_dict(torch.load('param/ppo_net_params.pkl',  map_location=torch.device('cpu')))
+        self.net.load_state_dict(torch.load('param/ppo_net_params.pkl',  map_location=torch.device('cpu')))'
 
 
 if __name__ == "__main__":

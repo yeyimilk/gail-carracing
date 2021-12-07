@@ -54,12 +54,16 @@ def main(args):
 
     exp_rwd_iter = []
     expert_obs = []
+
     expert_obs_array = np.empty((obs.shape))
     expert_acts = []
+    state_space = np.concatenate((obs, obs), axis=3)
+    expert_states_array = np.empty((state_space.shape))
 
     # Getting Agent states and actions
     episode_rewards = []
     expert_iterations = 1
+    expert_actions_array = np.empty((1, 3))
 
     # Getting Expert states and actions
     for iteration in range(expert_iterations):
@@ -69,12 +73,19 @@ def main(args):
 
         t = 0
         done = False
+        #Input shape: (1, 96, 96, 4)
         ob = env.reset()
         steps = 0
 
+        # print(f"Input shape: {ob.shape}")
+
         while not done:
+
+            state_space = obs.copy()
+
+            # Expert action: [0.99428356 0.5814981  0.0103017](3, )
             act = expert.act(ob)
-            # print("Expert action:", act)
+            # print("Expert action:", act, act.shape)
 
             ep_obs.append(ob)
             expert_obs.append(ob)
@@ -82,19 +93,22 @@ def main(args):
             action = np.array(act)
             expert_acts.append(action)
             expert_obs_array = np.vstack((expert_obs_array, obs))
+            expert_actions_array = np.vstack((expert_actions_array, action))
 
             if render:
                 env.render()
 
             ob, rwd, done, info = env.step(act * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
             # state_, reward, done, die = env.step(action * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+            state_space = np.concatenate((state_space, obs), axis=3)
+            expert_states_array = np.vstack((expert_states_array, state_space))
 
             ep_rwds.append(rwd)
 
             t += 1
             steps += 1
 
-            # if t >= 1000:
+            # if t >= 1:
             #     break
 
         if done:
@@ -102,6 +116,8 @@ def main(args):
 
         print(f"Expert Episode:{iteration} - Expert Reward: {np.sum(ep_rwds)}")
 
+
+    # exit(0)
     # Initialising Policy and Descriminator networks
     Policy = Policy_net('policy', env)
     Old_Policy = Policy_net('old_policy', env)
@@ -123,6 +139,10 @@ def main(args):
             v_preds = []
             run_policy_steps = 0
             observ_array = np.empty((obs.shape))
+
+            state_space = np.concatenate((obs, obs), axis=3)
+            agents_states_array = np.empty((state_space.shape))
+
             actions_array = np.empty((1,3))
 
             while True:
@@ -140,7 +160,10 @@ def main(args):
                 actions_array = np.vstack((actions_array, agent_act))
                 agent_act = agent_act[0]
 
-                next_obs, reward, done, info = env.step(act * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+                next_obs, reward, done, info = env.step(agent_act * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+
+                state_space = np.concatenate((obs, next_obs), axis=3)
+                agents_states_array = np.vstack((agents_states_array, state_space))
 
                 if render:
                     env.render()
@@ -163,24 +186,26 @@ def main(args):
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_reward', simple_value=episode_total_rewards)])
                                , iteration)
 
-
             if iteration % model_save_index == 0:
                 save_path = saver.save(sess, "saved_model/model.ckpt")
                 print("Model saved in path: %s" % save_path)
 
             expert_acts = np.array(expert_acts).astype(dtype=np.int32)
 
-            # print("Observation space: {}".format(observ_array.shape), actions_array.shape)
-            # print("expert_obs space: {}".format(expert_obs_array.shape), expert_acts.shape)
-
             # train discriminator
             for i in range(5):
+                # D.train(expert_s=expert_states_array,
+                #         agent_s=agents_states_array,
+                #         # exper_a=
+                #         )
+
                 D.train(expert_s=expert_obs_array,
                         agent_s=observ_array,
-                        expert_a=expert_acts,
-                        agent_a=actions_array)
+                        expert_a=expert_actions_array,
+                        agent_a=actions_array
+                        )
 
-            d_rewards = D.get_rewards(agent_s=observ_array, agent_a=actions_array)
+            d_rewards = D.get_rewards(agent_s=observ_array,agent_a=actions_array)
             print(f" Rewards from Descriminator:{d_rewards}")
 
             gaes = PPO.get_gaes(rewards=d_rewards, v_preds=v_preds, v_preds_next=v_preds_next)
