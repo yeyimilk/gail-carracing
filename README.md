@@ -10,7 +10,8 @@ The project is divided into two steps
 2. Train the agent using the expert trajectories from the step1 by utilizing GAN architecture.
 
 Design:
-![alt text]](https://user-images.githubusercontent.com/32699857/147871510-b1927865-e57f-4d7a-9693-839310b01b3e.PNG)
+
+![alt text](https://user-images.githubusercontent.com/32699857/147871510-b1927865-e57f-4d7a-9693-839310b01b3e.PNG)
 
 Results:
 ![alt text](https://user-images.githubusercontent.com/32699857/147870992-7873ad00-2ac7-4cb5-8f9c-d5bcb883d4ed.gif)
