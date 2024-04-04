@@ -5,7 +5,10 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
 import gym
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 from network_models.policy_net import Policy_net
 from network_models.discriminator import Discriminator
 from algo.ppo import PPOTrain
@@ -41,7 +44,7 @@ def main(args):
     expert = Agent(trainedWeights)
     expert.load_param()
 
-    render = True
+    render = False
 
     logdir = os.path.join("logs", str(time.time()))
     savedir = os.path.join(logdir, "saved_model")
@@ -150,6 +153,7 @@ def main(args):
 
                 # Get Agent action for the given state
                 agent_act, v_pred = Policy.act(obs=obs, stochastic=True)
+                
 
                 observations.append(obs)
                 actions.append(agent_act)
@@ -169,7 +173,8 @@ def main(args):
                     env.render()
 
                 if done:
-                    v_preds_next = v_preds[1:] + [0]  # next state of terminate state has 0 state value
+                    v_preds_next = np.concatenate(v_preds[1:]).squeeze() + [0]  # next state of terminate state has 0 state value
+                    
                     obs = env.reset()
                     reward = -1
                     break
